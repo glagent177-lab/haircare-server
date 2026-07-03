@@ -59,9 +59,12 @@ export const emailService = {
             </div>
 
             <p style="font-size: 13px; color: #666; text-align: center;">
-              Если вы не подтвердите запись в течение 30 минут, она будет автоматически отменена.
+              Если вы не подтвердите запись в течение 10 минут, она будет автоматически отменена.
             </p>
-            <p style="font-size: 12px; color: #555; text-align: center; margin-top: 8px;">
+            <p style="font-size: 12px; color: #888; text-align: center; margin-top: 8px;">
+              Не забудьте проверить папку <strong style="color: #D4AF37;">«Спам»</strong> — письмо может попасть туда.
+            </p>
+            <p style="font-size: 12px; color: #555; text-align: center; margin-top: 2px;">
               Если что-то пошло не так, позвоните нам по телефону, указанному на сайте.
             </p>
           </div>

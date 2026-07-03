@@ -165,7 +165,7 @@ export const appointmentRepository = {
   },
 
   async cancelExpiredPending() {
-    const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+    const cutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString()
     const { data, error } = await supabase
       .from('appointments')
       .update({ status: 'cancelled' })
