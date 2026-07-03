@@ -6,9 +6,11 @@ const FROM_EMAIL = process.env.EMAIL_FROM || 'onboarding@resend.dev'
 
 export const emailService = {
   async sendBookingConfirmation(booking) {
-    const { email, client_name, service_name, barber_name, date, time, service_price } = booking
+    const { email, client_name, service_name, barber_name, date, time, service_price, confirmation_token } = booking
 
     if (!email) return
+
+    const confirmUrl = `${process.env.SERVER_ORIGIN || 'https://haircare-server-pj24.onrender.com'}/api/bookings/confirm/${confirmation_token}`
 
     try {
       await resend.emails.send({
@@ -24,7 +26,7 @@ export const emailService = {
 
             <p style="font-size: 16px; color: #ddd;">Здравствуйте, <strong style="color: #fff;">${client_name}</strong>!</p>
             <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">
-              Вы записаны. Вот детали вашего визита:
+              Вы записаны. Пожалуйста, подтвердите запись:
             </p>
 
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
@@ -50,8 +52,17 @@ export const emailService = {
               </tr>
             </table>
 
-            <p style="font-size: 13px; color: #666; text-align: center; margin-top: 32px;">
-              Если вам нужно отменить или перенести запись, позвоните нам по телефону, указанному на сайте.
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${confirmUrl}" style="display: inline-block; background: #D4AF37; color: #000; text-decoration: none; font-size: 18px; font-weight: bold; padding: 16px 40px; border-radius: 12px;">
+                Подтвердить запись
+              </a>
+            </div>
+
+            <p style="font-size: 13px; color: #666; text-align: center;">
+              Если вы не подтвердите запись в течение 30 минут, она будет автоматически отменена.
+            </p>
+            <p style="font-size: 12px; color: #555; text-align: center; margin-top: 8px;">
+              Если что-то пошло не так, позвоните нам по телефону, указанному на сайте.
             </p>
           </div>
         `,

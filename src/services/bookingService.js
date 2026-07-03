@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { supabase } from '../lib/supabase.js'
 import { appointmentRepository } from '../repositories/appointmentRepository.js'
 import { clientRepository } from '../repositories/clientRepository.js'
@@ -49,8 +50,11 @@ export const bookingService = {
 
       const client = await clientRepository.findOrCreate(name, phone)
 
+      const confirmationToken = crypto.randomUUID()
+
       const appointment = await appointmentRepository.create({
         name, phone, email, service, master, date, time, price,
+        confirmation_token: confirmationToken,
         client_id: client?.id || null,
         barber_id: barber?.id || null,
       })
@@ -74,6 +78,7 @@ export const bookingService = {
           date,
           time,
           service_price: price,
+          confirmation_token: confirmationToken,
         }).catch(() => {})
       }
 

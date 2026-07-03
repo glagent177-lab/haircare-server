@@ -28,6 +28,7 @@ export const appointmentRepository = {
         client_name: data.name,
         client_phone: data.phone,
         client_email: data.email || null,
+        confirmation_token: data.confirmation_token || null,
         service_name: data.service,
         service_price: data.price ? parseInt(data.price) : 0,
         barber_name: data.master,
@@ -47,6 +48,37 @@ export const appointmentRepository = {
     }
 
     return appointment
+  },
+
+  async findByConfirmationToken(token) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('confirmation_token', token)
+      .maybeSingle()
+
+    if (error) {
+      logger.error('findByConfirmationToken error:', error)
+      return null
+    }
+
+    return data
+  },
+
+  async confirmByToken(token) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
+      .eq('confirmation_token', token)
+      .select()
+      .single()
+
+    if (error) {
+      logger.error('confirmByToken error:', error)
+      throw error
+    }
+
+    return data
   },
 
   async findOverlapping(master, date, time, duration) {

@@ -166,6 +166,75 @@ app.get('/api/reviews', async (_req, res, next) => {
   }
 })
 
+// GET /api/bookings/confirm/:token — подтверждение записи по email
+app.get('/api/bookings/confirm/:token', async (req, res, next) => {
+  try {
+    const { token } = req.params
+    const appointment = await appointmentRepository.findByConfirmationToken(token)
+
+    if (!appointment) {
+      return res.status(404).type('html').send(CONFIRM_PAGE(false, 'Ссылка недействительна или запись уже подтверждена'))
+    }
+
+    if (appointment.status === 'confirmed') {
+      return res.type('html').send(CONFIRM_PAGE(true, 'Запись уже была подтверждена ранее'))
+    }
+
+    await appointmentRepository.confirmByToken(token)
+
+    res.type('html').send(CONFIRM_PAGE(true, 'Запись успешно подтверждена! Ждём вас в назначенное время.'))
+  } catch (err) {
+    next(err)
+  }
+})
+
+const CONFIRM_PAGE = (success, message) => `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${success ? 'Запись подтверждена' : 'Ошибка'} — HairCare</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #111; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .card {
+      background: #1a1a1a; border: 1px solid #333;
+      border-radius: 20px; padding: 48px 40px;
+      max-width: 440px; width: 100%; text-align: center;
+    }
+    .icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      ${success ? 'background: rgba(212,175,55,0.15); border: 2px solid #D4AF37;' : 'background: rgba(255,68,68,0.15); border: 2px solid #f44;'}
+    }
+    h1 { font-size: 24px; margin-bottom: 12px; }
+    p { color: #999; font-size: 15px; line-height: 1.5; }
+    .back { display: inline-block; margin-top: 24px; color: #D4AF37; text-decoration: none; font-size: 14px; }
+    .back:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">
+      ${success
+        ? '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>'
+        : '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f44" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>'
+      }
+    </div>
+    <h1>${success ? 'Запись подтверждена!' : 'Ошибка'}</h1>
+    <p>${message}</p>
+    <a class="back" href="https://cw955313.tw1.ru">Вернуться на сайт</a>
+  </div>
+</body>
+</html>`
+
 // GET /api/health — проверка сервера
 app.get('/api/health', async (_req, res) => {
   try {
