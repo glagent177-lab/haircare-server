@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import WebSocket from 'ws'
 import 'dotenv/config'
 
 const supabaseUrl = process.env.SUPABASE_URL
@@ -23,4 +24,5 @@ async function fetchWithRetry(input, init, retries = 2) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   global: { fetch: fetchWithRetry },
+  realtime: { transport: WebSocket },
 })
