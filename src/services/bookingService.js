@@ -5,6 +5,7 @@ import { serviceRepository } from '../repositories/serviceRepository.js'
 import { barberRepository } from '../repositories/barberRepository.js'
 import { activityLogService } from './activityLogService.js'
 
+import { emailService } from './emailService.js'
 import { ConflictError, AppError } from '../utils/errors.js'
 import { logger } from '../utils/logger.js'
 
@@ -14,7 +15,7 @@ export const bookingService = {
   },
 
   async createBooking(data) {
-    const { name, phone, service, master, date, time, price } = data
+    const { name, phone, email, service, master, date, time, price } = data
     const lockKey = 'booking_' + master.replace(/[^a-zA-Z0-9_]/g, '_') + '_' + date
 
     let lockAcquired = false
@@ -49,7 +50,7 @@ export const bookingService = {
       const client = await clientRepository.findOrCreate(name, phone)
 
       const appointment = await appointmentRepository.create({
-        name, phone, service, master, date, time, price,
+        name, phone, email, service, master, date, time, price,
         client_id: client?.id || null,
         barber_id: barber?.id || null,
       })
@@ -58,10 +59,24 @@ export const bookingService = {
         action: 'appointment.created',
         entityType: 'appointment',
         entityId: appointment.id,
-        details: { name, phone, service, master, date, time },
+        details: { name, phone, email, service, master, date, time },
       }).catch(() => {})
 
-      logger.info('Новая запись:', { id: appointment.id, name, service, master, date, time })
+      logger.info('Новая запись:', { id: appointment.id, name, email, service, master, date, time })
+
+      if (email) {
+        emailService.sendBookingConfirmation({
+          id: appointment.id,
+          email,
+          client_name: name,
+          service_name: service,
+          barber_name: master,
+          date,
+          time,
+          service_price: price,
+        }).catch(() => {})
+      }
+
       return appointment
     } finally {
       if (lockAcquired) {

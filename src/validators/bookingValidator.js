@@ -2,8 +2,10 @@ import { ValidationError } from '../utils/errors.js'
 
 const PHONE_REGEX = /^(\+7|8)?[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export function validateBookingInput(data) {
-  const { name, phone, service, master, date, time } = data
+  const { name, phone, email, service, master, date, time } = data
 
   if (!name || !name.trim()) {
     throw new ValidationError('Укажите имя')
@@ -15,6 +17,10 @@ export function validateBookingInput(data) {
 
   if (!PHONE_REGEX.test(phone.trim())) {
     throw new ValidationError('Введите корректный номер телефона (например, +7 (999) 123-45-67)')
+  }
+
+  if (email && !EMAIL_REGEX.test(email.trim())) {
+    throw new ValidationError('Введите корректный email')
   }
 
   if (!service || !service.trim()) {
@@ -36,6 +42,7 @@ export function validateBookingInput(data) {
   return {
     name: name.trim(),
     phone: phone.trim(),
+    email: email ? email.trim() : '',
     service: service.trim(),
     master: master.trim(),
     date,

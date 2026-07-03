@@ -27,6 +27,7 @@ export const appointmentRepository = {
       .insert({
         client_name: data.name,
         client_phone: data.phone,
+        client_email: data.email || null,
         service_name: data.service,
         service_price: data.price ? parseInt(data.price) : 0,
         barber_name: data.master,
