@@ -164,6 +164,27 @@ export const appointmentRepository = {
     return data
   },
 
+  async cancelExpiredPending() {
+    const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ status: 'cancelled' })
+      .eq('status', 'pending')
+      .lt('created_at', cutoff)
+      .select()
+
+    if (error) {
+      logger.error('cancelExpiredPending error:', error)
+      return 0
+    }
+
+    if (data && data.length > 0) {
+      logger.info(`Auto-cancelled ${data.length} expired pending appointments`)
+    }
+
+    return data?.length || 0
+  },
+
   async delete(id) {
     const { error } = await supabase
       .from('appointments')

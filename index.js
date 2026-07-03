@@ -772,6 +772,17 @@ app.delete('/api/admin/days-off/:id', async (req, res, next) => {
 // ──────────────────────────────────────────────
 app.use(errorHandler)
 
+// ── Авто-отмена неподтверждённых записей (каждые 5 мин)
+const CANCEL_INTERVAL = 5 * 60 * 1000
+setInterval(async () => {
+  try {
+    await appointmentRepository.cancelExpiredPending()
+  } catch (err) {
+    logger.error('Auto-cancel scheduler error:', err.message)
+  }
+}, CANCEL_INTERVAL)
+logger.info(`Auto-cancel scheduler запущен (интервал: ${CANCEL_INTERVAL / 1000}с)`)
+
 app.listen(PORT, () => {
   logger.info(`Сервер запущен на http://localhost:${PORT}`)
 })
